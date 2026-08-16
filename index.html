@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영어 문법 GO - 스마트 영어 학습 포털 Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+        }
+        body {
+            background-color: var(--bg-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .card-hover {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.15);
+        }
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        .animate-pokeball {
+            animation: pulse-slow 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-stone-800">
+
+<!-- Chosen Palette: Poké Red & Slate Indigo -->
+<!-- Application Structure Plan: Split into 2 primary screens: 1) Trainer Registration with direct Teacher Login button, 2) Interactive Grammar Hub Dashboard displaying student/teacher status and 4 updated grammar stage spots. Includes custom HTML Password Modal & Teacher Dashboard modal to aggregate and export student participation data directly accessible from screen 1 or screen 2. -->
+<!-- Visualization & Content Choices: Pokéball CSS graphics, responsive Tailwind grid dashboard, LocalStorage session & attendance logging with CSV export. Custom HTML password verification modal prevents browser prompt block issues. Confirming NO SVG/Mermaid used. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- ========================================== -->
+    <!-- SCREEN 1: POKÉMON GO STYLE LANDING PAGE    -->
+    <!-- ========================================== -->
+    <div id="screen-welcome" class="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white w-full">
+        <div class="max-w-md w-full bg-slate-900/90 border-2 border-rose-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-md space-y-6 text-center relative overflow-hidden">
+            
+            <!-- Background Decorative Glow -->
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-rose-600/20 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+            <!-- Animated Pokéball Icon -->
+            <div class="mx-auto w-24 h-24 rounded-full border-4 border-slate-900 flex items-center justify-center bg-rose-600 shadow-lg relative overflow-hidden animate-pokeball">
+                <div class="absolute inset-x-0 top-0 h-1/2 bg-rose-600 border-b-2 border-slate-900"></div>
+                <div class="absolute inset-x-0 bottom-0 h-1/2 bg-white"></div>
+                <div class="absolute inset-0 m-auto w-7 h-7 bg-slate-900 rounded-full border-4 border-white z-10 flex items-center justify-center">
+                    <div class="w-2 h-2 bg-amber-400 rounded-full"></div>
+                </div>
+            </div>
+
+            <!-- Title Header -->
+            <div class="space-y-2">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-500/20 border border-rose-400/40 rounded-full text-rose-300 text-xs font-black tracking-wider">
+                    ⚡ GRAMMAR TRAINER REGISTRATION
+                </div>
+                <h1 class="text-3xl font-black text-white tracking-tight">영어 문법 <span class="text-rose-500">GO</span></h1>
+                <p class="text-xs text-indigo-200 leading-relaxed">
+                    문법 포획 트레이닝을 시작하기 위해<br>트레이너 프로필(학번과 이름)을 입력해 주세요!
+                </p>
+            </div>
+
+            <!-- Student Input Form -->
+            <form onsubmit="event.preventDefault(); loginTrainer();" class="space-y-4 text-left pt-2">
+                <div>
+                    <label class="text-xs font-bold text-indigo-200 block mb-1.5">🎓 학번 (예: 3101)</label>
+                    <input type="text" id="input-student-id" placeholder="학번 4자리를 입력하세요" class="w-full px-4 py-3 bg-slate-800 border border-indigo-500/40 rounded-xl text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-indigo-200 block mb-1.5">👤 이름 (예: 홍길동)</label>
+                    <input type="text" id="input-student-name" placeholder="이름을 입력하세요" class="w-full px-4 py-3 bg-slate-800 border border-indigo-500/40 rounded-xl text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 transition">
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-extrabold text-base rounded-xl shadow-lg transition transform hover:scale-[1.02] flex items-center justify-center gap-2 mt-2">
+                    <span>🎮</span> <span>문법 트레이닝 시작하기!</span>
+                </button>
+            </form>
+
+            <!-- Direct Teacher Access Button on First Screen -->
+            <div class="pt-3 border-t border-slate-800/80 space-y-2">
+                <button onclick="openAdminModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-indigo-200 hover:text-white border border-indigo-500/30 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+                    <span>🔒</span> <span>교사용 바로가기 (출석 확인 및 관리)</span>
+                </button>
+                <p class="text-[11px] text-slate-400">
+                    🔒 학생 입력 정보는 출석 확인용으로 안전하게 기록됩니다.
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- SCREEN 2: MAIN GRAMMAR HUB DASHBOARD       -->
+    <!-- ========================================== -->
+    <div id="screen-hub" class="hidden min-h-screen flex flex-col justify-between">
+        
+        <!-- Header Section -->
+        <header class="bg-white border-b border-stone-200 sticky top-0 z-40 shadow-sm">
+            <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full border-2 border-stone-800 flex items-center justify-center font-extrabold text-white bg-rose-600 shadow-sm relative overflow-hidden">
+                        <div class="absolute inset-x-0 top-0 h-1/2 bg-rose-600"></div>
+                        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-white"></div>
+                        <div class="absolute inset-0 m-auto w-3 h-3 bg-stone-900 rounded-full border-2 border-white z-10"></div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-xl font-black text-stone-900 tracking-tight">영어 문법 <span class="text-rose-600">GO</span></h1>
+                            <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded-full border border-rose-200">HUB</span>
+                        </div>
+                        <p class="text-xs text-stone-500 mt-0.5">도전할 문법 스팟을 선택하여 포획을 시작하세요</p>
+                    </div>
+                </div>
+
+                <!-- Logged In User Status Card -->
+                <div class="flex items-center gap-3 bg-indigo-50 border border-indigo-100 px-3.5 py-2 rounded-2xl">
+                    <div class="text-xs">
+                        <span class="text-indigo-600 font-bold block text-[10px]">CURRENT TRAINER</span>
+                        <span id="display-trainer-info" class="font-black text-indigo-950 text-sm">3101 홍길동</span>
+                    </div>
+                    <button onclick="logoutTrainer()" class="text-xs bg-white hover:bg-rose-50 text-stone-600 hover:text-rose-600 border border-stone-200 hover:border-rose-200 px-2.5 py-1 rounded-lg font-bold transition">
+                        변경 ↺
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-5xl mx-auto px-4 py-8 flex-grow w-full space-y-8">
+            
+            <!-- Welcome Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-md relative overflow-hidden">
+                <div class="relative z-10 space-y-2 max-w-2xl">
+                    <span class="px-3 py-1 bg-amber-400 text-stone-950 font-black text-xs rounded-full inline-block shadow-sm">⚡ 준비 완료!</span>
+                    <h2 class="text-2xl sm:text-3xl font-black tracking-tight"><span id="welcome-name-text">홍길동</span> 트레이너님, 원하는 스팟을 선택하세요!</h2>
+                    <p class="text-xs sm:text-sm text-indigo-200 leading-relaxed pt-1">
+                        아래 <strong>[학습 시작하기 ➔]</strong> 버튼을 클릭하여 각 문법 스테이지로 접속할 수 있습니다. 
+                    </p>
+                </div>
+                <div class="absolute right-4 -bottom-6 text-8xl opacity-10 pointer-events-none select-none">
+                    🎮
+                </div>
+            </div>
+
+            <!-- App Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Card 1: 과거 완료 & 영어 시제 -->
+                <div class="bg-white border border-stone-200 rounded-2xl p-6 card-hover flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="text-3xl">⏱️</span>
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-black rounded-lg border border-rose-200">STAGE 1</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-stone-900">과거 완료 & 영어 시제 마스터 트레이닝 코스</h3>
+                            <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+                                과거완료(had p.p.), 현재완료, 진행형 등 주요 영문 시제의 구조와 타임라인 및 시점 표시 부사구와의 결합을 완벽 포획합니다.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">시제 타임라인</span>
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">과거완료 vs 현재완료</span>
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">부사구 짝짓기</span>
+                        </div>
+                    </div>
+
+                    <a href="https://gray-humpback.github.io/hadpp/" target="_blank" class="w-full py-3 bg-indigo-900 hover:bg-rose-600 text-white font-bold text-center text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                        <span>학습 시작하기</span> <span>➔</span>
+                    </a>
+                </div>
+
+                <!-- Card 2: 분사 & 분사 구문 -->
+                <div class="bg-white border border-stone-200 rounded-2xl p-6 card-hover flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="text-3xl">🧩</span>
+                            <span class="px-2.5 py-1 bg-amber-50 text-amber-800 text-xs font-black rounded-lg border border-amber-200">STAGE 2</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-stone-900">분사 & 분사 구문 마스터 트레이닝 코스</h3>
+                            <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+                                현재분사(-ing)와 과거분사(p.p.)의 형용사적 용법과 접속사/주어를 생략하여 문장을 간결하게 바꾸는 분사구문 전환을 완벽 연습합니다.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">현재분사 vs 과거분사</span>
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">접속사 생략 규칙</span>
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">분사구문 영작</span>
+                        </div>
+                    </div>
+
+                    <a href="https://gray-humpback.github.io/eding/" target="_blank" class="w-full py-3 bg-indigo-900 hover:bg-rose-600 text-white font-bold text-center text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                        <span>학습 시작하기</span> <span>➔</span>
+                    </a>
+                </div>
+
+                <!-- Card 3: 가정법 -->
+                <div class="bg-white border border-stone-200 rounded-2xl p-6 card-hover flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="text-3xl">⏳</span>
+                            <span class="px-2.5 py-1 bg-emerald-50 text-emerald-800 text-xs font-black rounded-lg border border-emerald-200">STAGE 3</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-stone-900">가정법 마스터 트레이닝 코스</h3>
+                            <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+                                현재 사실 반대(가정법 과거)와 과거 사실 반대(가정법 과거완료)의 구조 공식, If절 시제 변형 및 상황 제시형 영작을 다룹니다.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">가정법 과거</span>
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">가정법 과거완료</span>
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">상황 제시형 영작</span>
+                        </div>
+                    </div>
+
+                    <a href="https://gray-humpback.github.io/ififif/" target="_blank" class="w-full py-3 bg-indigo-900 hover:bg-rose-600 text-white font-bold text-center text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                        <span>학습 시작하기</span> <span>➔</span>
+                    </a>
+                </div>
+
+                <!-- Card 4: 관계대명사 -->
+                <div class="bg-white border border-stone-200 rounded-2xl p-6 card-hover flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-start">
+                            <span class="text-3xl">🔗</span>
+                            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-800 text-xs font-black rounded-lg border border-indigo-200">STAGE 4</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-stone-900">관계대명사 마스터 트레이너</h3>
+                            <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+                                who, which, whose, that 및 선행사를 포함하는 관계대명사 what의 개념과 문장 결합, What vs That 구분법을 완벽 습득합니다.
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">단어 카드 배열</span>
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">What vs That 비교</span>
+                            <span class="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[11px]">실전 진단 테스트</span>
+                        </div>
+                    </div>
+
+                    <a href="https://gray-humpback.github.io/what/" target="_blank" class="w-full py-3 bg-indigo-900 hover:bg-rose-600 text-white font-bold text-center text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                        <span>학습 시작하기</span> <span>➔</span>
+                    </a>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Footer with Secret Teacher Button -->
+        <footer class="bg-white border-t border-stone-200 py-6">
+            <div class="max-w-5xl mx-auto px-4 flex justify-between items-center text-xs text-stone-400">
+                <span>© 2026 English Grammar GO • Smart Grammar System</span>
+                <!-- Secret Teacher Mode Entry -->
+                <button onclick="openAdminModal()" class="hover:text-stone-700 underline font-medium flex items-center gap-1">
+                    🔒 교사용 출석 데이터
+                </button>
+            </div>
+        </footer>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- TEACHER PASSWORD AUTH MODAL                -->
+    <!-- ========================================== -->
+    <div id="modal-password" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-stone-200 space-y-4 text-left">
+            <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🔒</span>
+                    <h3 class="font-bold text-stone-900 text-base">교사용 인증</h3>
+                </div>
+                <button onclick="closePasswordModal()" class="text-stone-400 hover:text-stone-700 font-bold text-lg px-2">✕</button>
+            </div>
+            
+            <p class="text-xs text-stone-500 leading-relaxed">
+                교사용 관리 페이지 접속을 위해 비밀번호를 입력하세요.<br>(기본 비밀번호: <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold text-slate-800">1234</code>)
+            </p>
+
+            <form onsubmit="event.preventDefault(); verifyTeacherPassword();" class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-stone-700 block mb-1">비밀번호 입력</label>
+                    <input type="password" id="input-teacher-pass" placeholder="비밀번호를 입력하세요" class="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    <p id="pass-error-msg" class="hidden text-xs text-rose-600 font-bold mt-1.5">⚠️ 비밀번호가 올바르지 않습니다.</p>
+                </div>
+
+                <div class="flex gap-2 pt-1">
+                    <button type="button" onclick="closePasswordModal()" class="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl text-xs font-bold transition">
+                        취소
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                        확인
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- SECRET TEACHER ADMIN MODAL (DATA VIEW)     -->
+    <!-- ========================================== -->
+    <div id="modal-admin" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-stone-200 space-y-4 p-6">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📊</span>
+                    <h3 class="font-bold text-stone-900 text-lg">교사용 참가자 출석 취합 목록</h3>
+                </div>
+                <button onclick="closeAdminModal()" class="text-stone-400 hover:text-stone-700 font-bold text-xl px-2">✕</button>
+            </div>
+
+            <p class="text-xs text-stone-500">
+                이 기기/브라우저에서 접속한 트레이너(학생)들의 접속 타임스탬프 기록입니다.
+            </p>
+
+            <div class="overflow-x-auto max-h-80 border border-stone-200 rounded-xl">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-stone-100 text-stone-700 font-bold sticky top-0 border-b border-stone-200">
+                        <tr>
+                            <th class="p-3">#</th>
+                            <th class="p-3">학번</th>
+                            <th class="p-3">이름</th>
+                            <th class="p-3">최초 접속 시간</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body" class="divide-y divide-stone-200 text-stone-800 font-mono">
+                        <!-- JS Dynamic Insertion -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex flex-wrap justify-between items-center gap-2 pt-2">
+                <button onclick="clearParticipantLogs()" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition">
+                    🗑️ 명단 전체 삭제
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="exportToCSV()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1">
+                        <span>📥</span> 엑셀(CSV) 다운로드
+                    </button>
+                    <button onclick="closeAdminModal()" class="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold rounded-xl text-xs transition">
+                        닫기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT LOGIC                           -->
+    <!-- ========================================== -->
+    <script>
+        const STORAGE_KEY_LOGS = 'grammar_go_participants';
+        const STORAGE_KEY_CURRENT = 'grammar_go_current_user';
+        const ADMIN_PASS = '1234'; // 교사용 기본 비밀번호
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkCurrentSession();
+        });
+
+        // 1. Session Check
+        function checkCurrentSession() {
+            const currentUser = localStorage.getItem(STORAGE_KEY_CURRENT);
+            if (currentUser) {
+                const user = JSON.parse(currentUser);
+                showHubScreen(user);
+            } else {
+                showWelcomeScreen();
+            }
+        }
+
+        // 2. Student Login & Record Data
+        function loginTrainer() {
+            const idInput = document.getElementById('input-student-id').value.trim();
+            const nameInput = document.getElementById('input-student-name').value.trim();
+
+            if (!idInput || !nameInput) {
+                alert('학번과 이름을 모두 입력해 주세요!');
+                return;
+            }
+
+            const now = new Date();
+            const timeString = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+            const newUser = {
+                studentId: idInput,
+                name: nameInput,
+                timestamp: timeString
+            };
+
+            // Save active session
+            localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify(newUser));
+
+            // Append to total participation logs
+            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY_LOGS) || '[]');
+            
+            // Check duplicate to update timestamp or keep existing
+            const existingIdx = logs.findIndex(item => item.studentId === idInput && item.name === nameInput);
+            if (existingIdx !== -1) {
+                logs[existingIdx].timestamp = timeString; // update
+            } else {
+                logs.push(newUser);
+            }
+            localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
+
+            showHubScreen(newUser);
+        }
+
+        // 3. Logout / Change Trainer
+        function logoutTrainer() {
+            localStorage.removeItem(STORAGE_KEY_CURRENT);
+            showWelcomeScreen();
+        }
+
+        // 4. Screen View Toggles
+        function showWelcomeScreen() {
+            document.getElementById('screen-welcome').classList.remove('hidden');
+            document.getElementById('screen-hub').classList.add('hidden');
+        }
+
+        function showHubScreen(user) {
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-hub').classList.remove('hidden');
+
+            document.getElementById('display-trainer-info').innerText = `${user.studentId} ${user.name}`;
+            document.getElementById('welcome-name-text').innerText = user.name;
+        }
+
+        // 5. Teacher Password Auth Modal Controls
+        function openAdminModal() {
+            document.getElementById('input-teacher-pass').value = '';
+            document.getElementById('pass-error-msg').classList.add('hidden');
+            document.getElementById('modal-password').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('input-teacher-pass').focus();
+            }, 100);
+        }
+
+        function closePasswordModal() {
+            document.getElementById('modal-password').classList.add('hidden');
+        }
+
+        function verifyTeacherPassword() {
+            const inputPass = document.getElementById('input-teacher-pass').value.trim();
+            if (inputPass !== ADMIN_PASS) {
+                document.getElementById('pass-error-msg').classList.remove('hidden');
+                return;
+            }
+
+            closePasswordModal();
+
+            // If logged in via welcome screen directly, set teacher session
+            const currentUser = localStorage.getItem(STORAGE_KEY_CURRENT);
+            if (!currentUser) {
+                const teacherUser = {
+                    studentId: '교사',
+                    name: '선생님',
+                    timestamp: 'ADMIN_SESSION'
+                };
+                localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify(teacherUser));
+            }
+
+            renderAdminTable();
+            document.getElementById('modal-admin').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('modal-admin').classList.add('hidden');
+            checkCurrentSession();
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-table-body');
+            const logs = JSON.parse(localStorage.getItem(STORAGE_KEY_LOGS) || '[]');
+
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-stone-400 font-sans">아직 접속 기록이 없습니다.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = logs.map((item, idx) => `
+                <tr class="hover:bg-stone-50">
+                    <td class="p-3 font-bold text-stone-400">${idx + 1}</td>
+                    <td class="p-3 font-bold text-stone-900">${item.studentId}</td>
+                    <td class="p-3 text-indigo-900 font-bold">${item.name}</td>
+                    <td class="p-3 text-stone-500 text-[11px]">${item.timestamp}</td>
+                </tr>
+            `).join('');
+        }
+
+        function clearParticipantLogs() {
+            if (confirm('모든 학생 출석 취합 데이터를 정말로 삭제하시겠습니까?')) {
+                localStorage.removeItem(STORAGE_KEY_LOGS);
+                renderAdminTable();
+            }
+        }
+
+        // 6. CSV Data Export
+        function exportToCSV() {
+            const logs = JSON.parse(localStorage.getItem(STORAGE_KEY_LOGS) || '[]');
+            if (logs.length === 0) {
+                alert('다운로드할 참가자 데이터가 없습니다.');
+                return;
+            }
+
+            let csvContent = "\uFEFF학번,이름,접속시간\n";
+            logs.forEach(row => {
+                csvContent += `"${row.studentId}","${row.name}","${row.timestamp}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `영어문법GO_참가자명단_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>
+```
+
+### 수정 사항 안내
+1. **커스텀 비밀번호 모달 구현 (`#modal-password`)**:
+   - 웹 브라우저 차단 우려가 있는 `prompt()` 팝업창 대신 HTML/Tailwind로 깔끔한 교사용 비밀번호 입력창을 제작했습니다.
+2. **비밀번호 유효성 검사**:
+   - 비밀번호 입력 후 `확인` 버튼을 누르거나 `Enter`키를 치면 검증되며, 오류 시 `⚠️ 비밀번호가 올바르지 않습니다.` 문구가 표시됩니다. (기본 비밀번호: `1234`)
+3. **출석 관리 모달 연동**:
+   - 비밀번호가 맞으면 출석 취합 목록 모달창으로 자동 연결됩니다.
