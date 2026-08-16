@@ -283,7 +283,7 @@
             </div>
             
             <p class="text-xs text-stone-500 leading-relaxed">
-                교사용 관리 페이지 접속을 위해 비밀번호를 입력하세요.<br>(기본 비밀번호: <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold text-slate-800">1234</code>)
+                교사용 관리 페이지 접속을 위해 비밀번호를 입력하세요.<br>
             </p>
 
             <form onsubmit="event.preventDefault(); verifyTeacherPassword();" class="space-y-3">
@@ -362,7 +362,7 @@
     <script>
         const STORAGE_KEY_LOGS = 'grammar_go_participants';
         const STORAGE_KEY_CURRENT = 'grammar_go_current_user';
-        const ADMIN_PASS = '1234'; // 교사용 기본 비밀번호
+        const ADMIN_PASS = '0410'; // 교사용 기본 비밀번호
 
         document.addEventListener("DOMContentLoaded", () => {
             checkCurrentSession();
